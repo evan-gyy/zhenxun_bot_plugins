@@ -11,6 +11,6 @@
 |                             名称                             |                   作者                   |          插件功能          |
 | :----------------------------------------------------------: | :--------------------------------------: | :------------------------: |
 | [随机莲莲](https://github.com/evan-gyy/zhenxun_bot_plugins/tree/master/lianlian) | [@evan-gyy](https://github.com/evan-gyy) | 随机放送东雪莲表情包和语音 |
-|                                                              |                                          |                            |
+|                           今日人品                           | [@evan-gyy](https://github.com/evan-gyy) |        获取今日人品        |
 |                                                              |                                          |                            |
 
