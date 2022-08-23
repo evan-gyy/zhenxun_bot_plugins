@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*/__pycache__/
+/.idea/
 *.py[cod]
 *$py.class
 
@@ -37,7 +39,7 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit utils / coverage reports
 htmlcov/
 .tox/
 .nox/
