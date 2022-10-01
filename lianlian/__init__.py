@@ -2,15 +2,20 @@ import random
 import json
 import os
 import re
+import gensim
+import jieba
+from queue import PriorityQueue as PQ
 from pathlib import Path
 from nonebot import on_command, on_keyword
 from nonebot.typing import T_State
+from nonebot.log import logger
 from nonebot.params import CommandArg
 from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, Message
 
 dir_path = Path(__file__).parent
 IMG_PATH = str((dir_path / "meme").absolute()) + "/"
 RECORD_PATH = str((dir_path / "record").absolute()) + "/"
+DATA_PATH = str((dir_path / "data").absolute()) + "/"
 
 __zx_plugin_name__ = "随机莲莲"
 __plugin_usage__ = """
@@ -48,7 +53,7 @@ dxl_zh = on_command("莲莲骂", priority=4, block=True)
 
 @dxl.handle()
 async def _(bot: Bot, event: Event):
-    text = event.get_plaintext()
+    text = event.get_plaintext().strip()
     if "罕见" in text:
         file = random_file(RECORD_PATH + '/hj')
         await dxl.finish(MessageSegment.record(file))
@@ -56,7 +61,12 @@ async def _(bot: Bot, event: Event):
         file = random_file(IMG_PATH, 'ag\d+')
         await dxl.finish(MessageSegment.image(file))
     elif "莲莲" in text:
-        await dxl.finish(MessageSegment.image(random_file()))
+        if text == "莲莲":
+            file = random_file()
+        else:
+            logger.info("开始寻找相似表情包...")
+            file = similar_meme(text.replace("莲莲", "").strip(), 3)
+        await dxl.finish(MessageSegment.image(file))
 
 
 @dxl_gj.handle()
@@ -76,6 +86,25 @@ async def _(bot: Bot, event: Event, args: Message = CommandArg()):
 async def _(bot: Bot, event: Event):
     record = random_file(RECORD_PATH + '/zh')
     await dxl_zh.finish(MessageSegment.record(record))
+
+
+def similar_meme(sentence, n=3):
+    vector_path = DATA_PATH + 'sgns.weibo.bigram-char.bin'
+    wv = gensim.models.KeyedVectors.load(vector_path, mmap='r')
+    with open(DATA_PATH + 'meme.json', 'r', encoding='utf-8') as f:
+        meme = json.load(f)
+    cut = jieba.lcut(sentence)
+    sims = PQ()
+    for k, v in meme.items():
+        sm = wv.n_similarity(cut, jieba.lcut(v))
+        sims.put([1-sm, k])
+    res = []
+    for _ in range(n):
+        res.append(sims.get()[-1])
+    if random.random() <= 0.8:
+        return f"file:///{IMG_PATH}/" + res[0] + '.jpg'
+    else:
+        return f"file:///{IMG_PATH}/" + random.choice(res) + '.jpg'
 
 
 def random_file(path=IMG_PATH, regex='\d+', end='\.\w+'):

@@ -1,3 +1,8 @@
+# models
+mockingbird/
+lianlian/data/sgns.weibo.bigram-char.bin
+lianlian/data/sgns.weibo.bigram-char.bin.vectors.npy
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 */__pycache__/
