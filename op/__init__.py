@@ -15,11 +15,11 @@ __plugin_usage__ = """
 usage：
     OP语录
     指令：
-        op/op语录/来点op ?[关键词]：随机op语录，输入关键词可以匹配相关语录
+        op/op语录/来点op/原神 ?[关键词]：随机op语录，输入关键词可以匹配相关语录
         示例：op 差不多得了
 """.strip()
 __plugin_des__ = "OP语录"
-__plugin_cmd__ = ["op", "op语录", "来点op"]
+__plugin_cmd__ = ["op", "op语录", "来点op", "原神"]
 __plugin_type__ = ("群内小游戏",)
 __plugin_version__ = 0.1
 __plugin_author__ = "evan-gyy"
@@ -31,7 +31,7 @@ __plugin_settings__ = {
 }
 __plugin_block_limit__ = {"rst": "我知道你很急，但你先别急"}
 
-op_posts = on_command("op", aliases={"op语录", "来点op"}, priority=5, block=True)
+op_posts = on_command("op", aliases={"op语录", "来点op", "原神"}, priority=5, block=True)
 
 @op_posts.handle()
 async def _(bot: Bot, event: Event, args: Message = CommandArg()):

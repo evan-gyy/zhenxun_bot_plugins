@@ -134,3 +134,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/lianlian/resources/data/sgns.weibo.bigram-char.bin
+/lianlian/resources/data/sgns.weibo.bigram-char.bin.vectors.npy
