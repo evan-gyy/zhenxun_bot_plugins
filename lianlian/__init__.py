@@ -12,7 +12,7 @@ from nonebot.log import logger
 from nonebot.params import CommandArg
 from nonebot.adapters.onebot.v11 import Bot, Event, MessageSegment, Message
 
-dir_path = Path(__file__).parent
+dir_path = Path(__file__).parent / "resources"
 IMG_PATH = str((dir_path / "meme").absolute()) + "/"
 RECORD_PATH = str((dir_path / "record").absolute()) + "/"
 DATA_PATH = str((dir_path / "data").absolute()) + "/"
@@ -64,7 +64,6 @@ async def _(bot: Bot, event: Event):
         if text == "莲莲":
             file = random_file()
         else:
-            logger.info("开始寻找相似表情包...")
             file = similar_meme(text.replace("莲莲", "").strip(), 3)
         await dxl.finish(MessageSegment.image(file))
 
@@ -93,18 +92,24 @@ def similar_meme(sentence, n=3):
     wv = gensim.models.KeyedVectors.load(vector_path, mmap='r')
     with open(DATA_PATH + 'meme.json', 'r', encoding='utf-8') as f:
         meme = json.load(f)
-    cut = jieba.lcut(sentence)
-    sims = PQ()
-    for k, v in meme.items():
-        sm = wv.n_similarity(cut, jieba.lcut(v))
-        sims.put([1-sm, k])
-    res = []
-    for _ in range(n):
-        res.append(sims.get()[-1])
-    if random.random() <= 0.8:
-        return f"file:///{IMG_PATH}/" + res[0] + '.jpg'
+    with open(DATA_PATH + 'cn_stopwords.txt', 'r', encoding='utf-8') as f:
+        stopwords = f.read().split()
+    cut = [token for token in jieba.lcut(sentence) if token not in stopwords]
+    logger.info(f"分词结果：{cut}")
+    try:
+        sims = PQ()
+        for k, v in meme.items():
+            sm = wv.n_similarity(cut, jieba.lcut(v))
+            sims.put([1-sm, k])
+    except ZeroDivisionError:
+        logger.error("分词结果为空或匹配失败，随机发送表情")
+        return random_file(IMG_PATH)
+    res = [sims.get() for _ in range(n)]
+    logger.info(f"相似度Top3: {res[:3]}")
+    if 1 - res[0][0] > 0.5 and res[1][0] > 0.5:
+        return f"file:///{IMG_PATH}/" + res[0][1] + '.jpg'
     else:
-        return f"file:///{IMG_PATH}/" + random.choice(res) + '.jpg'
+        return f"file:///{IMG_PATH}/" + random.choice(res[:3])[1] + '.jpg'
 
 
 def random_file(path=IMG_PATH, regex='\d+', end='\.\w+'):
