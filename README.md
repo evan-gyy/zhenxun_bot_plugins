@@ -14,4 +14,5 @@
 |   [今日人品](https://github.com/evan-gyy/zhenxun_bot_plugins/tree/master/jrrp)   | [@evan-gyy](https://github.com/evan-gyy) | 今日人品等骰娘指令复刻版 |
 | [OP语录](https://github.com/evan-gyy/zhenxun_bot_plugins/tree/master/op) | [@evan-gyy](https://github.com/evan-gyy) | 放送随机或指定的OP语录 |
 | [AI绘画](https://github.com/evan-gyy/zhenxun_bot_plugins/tree/master/aiart) | [@evan-gyy](https://github.com/evan-gyy) | 生成AI画作，基于文心大模型 |
+| [色图盲盒](https://github.com/evan-gyy/zhenxun_bot_plugins/tree/master/blind_box) | [@evan-gyy](https://github.com/evan-gyy) | 色图盲盒，小概率出鼎级涩图 |
 
