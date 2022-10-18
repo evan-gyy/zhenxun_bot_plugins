@@ -33,9 +33,9 @@ __plugin_settings__ = {
     "cmd": ["ai画"],
 }
 
-# 通过 https://wenxin.baidu.com/moduleApi/key 获取
-API_KEY = ""
-SECRET_KEY = ""
+# 通过 https://wenxin.baidu.com/moduleApi/key 获取，建议获取2-3对APIKEY备用，一一对应放入列表中
+API_KEY = []
+SECRET_KEY = []
 
 ai_art = on_command("ai画", block=True, priority=5)
 
@@ -56,31 +56,37 @@ async def _(bot: Bot, event: MessageEvent, text: str = ArgStr("text")):
     style = args[0] if len(args) > 1 else "卡通"
     prompt_text = "".join(args[1:]) if len(args) > 1 else text
     await ai_art.send("少女绘画中...（预计1-3分钟）")
-    try:
-        rst = await get_ai_image(API_KEY, SECRET_KEY, prompt_text, style)
-        if rst["imgUrls"]:
-            image_list = rst["imgUrls"]
-            logger.info(f"AI绘画生成结果：{image_list}")
-            msg_list = [MessageSegment.image(img) for img in image_list]
-            if isinstance(event, GroupMessageEvent):
-                id = event.get_user_id()
-                await ai_art.send(Message(f"[CQ:at,qq={id}]画完了！"))
-                await bot.send_group_forward_msg(
-                    group_id=event.group_id, messages=forward_image(bot, msg_list)
-                )
+    for i in range(min(len(API_KEY), len(SECRET_KEY))):
+        try:
+            rst = await get_ai_image(API_KEY[i], SECRET_KEY[i], prompt_text, style)
+            if rst["imgUrls"]:
+                image_list = rst["imgUrls"]
+                logger.info(f"AI绘画生成结果：{image_list}")
+                msg_list = [MessageSegment.image(img) for img in image_list]
+                if isinstance(event, GroupMessageEvent):
+                    id = event.get_user_id()
+                    await ai_art.send(Message(f"[CQ:at,qq={id}]画完了！"))
+                    await bot.send_group_forward_msg(
+                        group_id=event.group_id, messages=forward_image(bot, msg_list)
+                    )
+                else:
+                    for m in msg_list:
+                        await ai_art.send(m)
             else:
-                for m in msg_list:
-                    await ai_art.send(m)
-        else:
-            await ai_art.send("你画给我看！")
-            logger.error(f"绘画时发生错误：{rst}")
-    except Exception as e:
-        if type(e) == wenxin_api.error.APIError:
-            ret = json.loads(e.args[0])
-            await ai_art.send(ret["msg"])
-        else:
-            await ai_art.send("你画给我看！")
-        logger.error(f"发生错误 {type(e).__name__}: {e}")
+                await ai_art.send("你画给我看！")
+                logger.error(f"绘画时发生错误：{rst}")
+            break
+        except Exception as e:
+            if type(e) == wenxin_api.error.APIError:
+                ret = json.loads(e.args[0])["msg"]
+                logger.error(f"第{i+1}次尝试发生错误：{ret}")
+                if ret != "access_token is expired" or i == 1:
+                    await ai_art.send(ret)
+                    break
+            else:
+                await ai_art.send("你画给我看！")
+                logger.error(f"发生未知错误 {type(e).__name__}: {e}")
+                break
 
 
 async def get_ai_image(api_key, secret_key, text, style="卡通"):
